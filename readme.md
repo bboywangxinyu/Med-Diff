@@ -70,15 +70,15 @@ After downloading, place the processed datasets into the `data/` directory.
 
 Example:
 
-\```text
 
+
+```
 data/
 ├── 2024-iomt-traffic-data.pt
 ├── CIC_IOMT_2024.pt
 ├── CIC_TON_IOT.pt
 └── NF-UNSW-NB15.pt
-
-\```
+```
 
 ## Training
 
