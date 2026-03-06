@@ -12,6 +12,54 @@ Users can directly enter the corresponding dataset directory and run the provide
 
 
 
+\---
+
+\# 另外一个更简单的方法（我强烈推荐）
+
+用 **4个空格缩进**：
+
+\```markdown
+\## Project Structure
+
+​    .
+​    ├── 2024-iomt-traffic-data/
+​    │   ├── train.py
+​    │   ├── test.py
+​    │   └── checkpoints/
+​    ├── CIC_IOMT_2024/
+​    │   ├── train.py
+​    │   ├── test.py
+​    │   └── checkpoints/
+\```
+
+Markdown 会自动识别为代码块。
+
+\---
+
+\# 最推荐的论文仓库写法（更好看）
+
+\```markdown
+\## Project Structure
+
+\```
+Med-Diff
+├── 2024-iomt-traffic-data
+├── CIC_IOMT_2024
+├── CIC_TON_IOT
+├── NF-UNSW-NB15
+├── data
+├── model
+├── utils
+└── README.md
+\```
+\```
+
+\---
+
+
+
+
+
 
 
 ## **Project Structure**
