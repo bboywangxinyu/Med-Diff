@@ -18,10 +18,8 @@ Users can directly enter the corresponding dataset directory and run the provide
 
 用 **4个空格缩进**：
 
-\```markdown
-\## Project Structure
-
-​    .
+```
+    .
 ​    ├── 2024-iomt-traffic-data/
 ​    │   ├── train.py
 ​    │   ├── test.py
@@ -30,7 +28,7 @@ Users can directly enter the corresponding dataset directory and run the provide
 ​    │   ├── train.py
 ​    │   ├── test.py
 ​    │   └── checkpoints/
-\```
+```
 
 Markdown 会自动识别为代码块。
 
