@@ -250,7 +250,7 @@ def parse_args():
 def main():
     args = parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("✅ device:", device)
+    print(" device:", device)
 
     rss0 = get_process_rss_mb()
     if device.type == "cuda":
@@ -258,9 +258,9 @@ def main():
         torch.cuda.reset_peak_memory_stats()
         torch.cuda.synchronize()
     cuda0 = cuda_mem_mb()
-    print(f"🧠 Host RSS baseline: {rss0:.2f} MB")
+    print(f" Host RSS baseline: {rss0:.2f} MB")
     if device.type == "cuda":
-        print(f"🎮 CUDA baseline (MB): alloc={cuda0['alloc']:.2f}, reserved={cuda0['reserved']:.2f}")
+        print(f" CUDA baseline (MB): alloc={cuda0['alloc']:.2f}, reserved={cuda0['reserved']:.2f}")
 
     ckpt_path = resolve_pth_path(args.ckpt)
     if not os.path.exists(ckpt_path):
@@ -274,10 +274,10 @@ def main():
     hidden_dim = int(hparams.get("hidden_dim", 128))
     dropout = float(hparams.get("dropout", 0.2))
 
-    print(f"✅ ckpt: {os.path.basename(ckpt_path)} | epoch={ckpt.get('epoch')} best_val_f1={ckpt.get('best_val_f1')}")
-    print(f"🎯 threshold: {thr:.4f} ({'ckpt' if args.thr is None else 'manual'})")
-    print(f"🧩 med_diff: hidden_dim={hidden_dim} dropout={dropout}")
-    print(f"🧪 LR train frac (stratified): {args.train_frac}")
+    print(f" ckpt: {os.path.basename(ckpt_path)} | epoch={ckpt.get('epoch')} best_val_f1={ckpt.get('best_val_f1')}")
+    print(f" threshold: {thr:.4f} ({'ckpt' if args.thr is None else 'manual'})")
+    print(f" med_diff: hidden_dim={hidden_dim} dropout={dropout}")
+    print(f" LR train frac (stratified): {args.train_frac}")
 
     if not os.path.exists(args.data):
         raise FileNotFoundError(f"Data not found: {args.data}")
@@ -349,7 +349,7 @@ def main():
     rss_after_test = get_process_rss_mb()
     cuda_after_embed = cuda_mem_mb()
 
-    print("\n🎨 Generating t-SNE visualizations (2D and 3D)...")
+    print("\n Generating t-SNE visualizations (2D and 3D)...")
 
     benign_all_indices = np.where(test_labels == 0)[0]
     attack_all_indices = np.where(test_labels == 1)[0]
@@ -358,7 +358,7 @@ def main():
 
     n_samples = min(target_per_class, len(benign_all_indices), len(attack_all_indices))
 
-    print(f"⚖️  Sampling balanced 1:1 dataset for Vis: {n_samples} Benign + {n_samples} Attack (Total {n_samples*2})")
+    print(f"  Sampling balanced 1:1 dataset for Vis: {n_samples} Benign + {n_samples} Attack (Total {n_samples*2})")
 
     benign_vis_idx = np.random.choice(benign_all_indices, n_samples, replace=False)
     attack_vis_idx = np.random.choice(attack_all_indices, n_samples, replace=False)
@@ -374,7 +374,7 @@ def main():
 
     ckpt_name = os.path.splitext(os.path.basename(args.ckpt))[0]
 
-    print("\n🎨 Generating t-SNE visualizations (2D and 3D)...")
+    print("\n Generating t-SNE visualizations (2D and 3D)...")
 
     benign_all_indices = np.where(test_labels == 0)[0]
     attack_all_indices = np.where(test_labels == 1)[0]
@@ -383,7 +383,7 @@ def main():
 
     n_samples = min(target_per_class, len(benign_all_indices), len(attack_all_indices))
 
-    print(f"⚖️  Sampling balanced 1:1 dataset for Vis: {n_samples} Benign + {n_samples} Attack (Total {n_samples*2})")
+    print(f"  Sampling balanced 1:1 dataset for Vis: {n_samples} Benign + {n_samples} Attack (Total {n_samples*2})")
 
     benign_vis_idx = np.random.choice(benign_all_indices, n_samples, replace=False)
     attack_vis_idx = np.random.choice(attack_all_indices, n_samples, replace=False)
@@ -399,7 +399,7 @@ def main():
 
     ckpt_name = os.path.splitext(os.path.basename(args.ckpt))[0]
 
-    print("正在计算 2D t-SNE (这比 PCA 慢，请耐心等待)...")
+    print("Computing 2D t-SNE (slower than PCA, please wait)...")
 
     plt.rcParams['font.family'] = 'serif'
 
@@ -439,9 +439,9 @@ def main():
     output_fig_path_2d = os.path.join(save_dir, f"tsne_2d_{ckpt_name}.png")
     plt.savefig(output_fig_path_2d, bbox_inches='tight')
     plt.close()
-    print(f"✅ 2D Visualization saved to: {output_fig_path_2d}")
+    print(f" 2D Visualization saved to: {output_fig_path_2d}")
 
-    print("正在计算 3D t-SNE (并生成带600DPI导出功能的网页)...")
+    print("Computing 3D t-SNE (and generating a web page with 600 DPI export)...")
     import plotly.graph_objects as go
 
     tsne_3d = TSNE(n_components=3, init='pca', learning_rate='auto', perplexity=30, random_state=42)
@@ -563,17 +563,17 @@ def main():
 
     fig.write_html(output_html_path, config=high_res_config, auto_open=False)
 
-    print(f"✅ [600 DPI配置] 交互式网页已保存: {output_html_path}")
-    print(f"✅ [600 DPI配置] 交互式网页已保存: {output_html_path}")
-    print("👉 操作: 下载 -> 浏览器打开 -> 调整角度 -> 点击右上角相机图标。")
-    print("⚠️  注意: 点击相机后浏览器可能会卡顿 1-2 秒，因为它在生成一张 6000x6000 的巨图！")
+    print(f" [600 DPI config] Interactive web page saved: {output_html_path}")
+    print(f" [600 DPI config] Interactive web page saved: {output_html_path}")
+    print(" Steps: Download -> open in browser -> adjust angle -> click the camera icon in the top right.")
+    print("  Note: After clicking the camera, the browser may lag for 1-2 seconds because it is generating a 6000x6000 image!")
 
-    print("\n⏱️ Embedding extraction latency:")
+    print("\n Embedding extraction latency:")
     print(f"    - train rollout: {t_train_embed_ms:.2f} ms")
     print(f"    - test  rollout: {t_test_embed_ms:.2f} ms")
     print(f"    - total embed  : {t_train_embed_ms + t_test_embed_ms:.2f} ms")
 
-    print("\n🧠 Memory usage (embedding extraction):")
+    print("\n Memory usage (embedding extraction):")
     print(f"    - Host RSS before: {rss_before_embed:.2f} MB")
     print(f"    - Host RSS after : {rss_after_test:.2f} MB (delta={rss_after_test - rss_before_embed:.2f} MB)")
     if device.type == "cuda":
@@ -586,7 +586,7 @@ def main():
     Z_train = Z_train_full[idx_sub]
     y_train = train_labels[idx_sub]
 
-    print("\n📉 LR training samples (stratified subset):")
+    print("\n LR training samples (stratified subset):")
     print(f"    - {len(idx_sub)} / {len(train_labels)} = {len(idx_sub)/max(1,len(train_labels)):.4%}")
     uniq, cnt = np.unique(y_train, return_counts=True)
     print(f"    - label dist: {dict(zip(uniq.tolist(), cnt.tolist()))}")
@@ -622,10 +622,10 @@ def main():
     f1_mac = f1_score(test_labels, y_pred_test, average="macro", zero_division=0)
     cm = confusion_matrix(test_labels, y_pred_test)
 
-    print("\n⏱️ LR probe latency:")
+    print("\n LR probe latency:")
     print(f"    - fit     : {lr_fit_ms:.2f} ms")
     print(f"    - predict : {lr_pred_ms:.2f} ms (N_test={len(test_labels)}, {lr_pred_ms/max(1,len(test_labels)):.6f} ms/sample)")
-    print("\n🧠 Memory usage (LR section):")
+    print("\n Memory usage (LR section):")
     print(f"    - Host RSS before: {rss_before_lr:.2f} MB")
     print(f"    - Host RSS after : {rss_after_lr:.2f} MB (delta={rss_after_lr - rss_before_lr:.2f} MB)")
     if device.type == "cuda":
@@ -635,7 +635,7 @@ def main():
               f"peak_alloc={cuda_after_lr['peak_alloc']:.2f}, peak_reserved={cuda_after_lr['peak_reserved']:.2f}")
 
     print("\n" + "=" * 60)
-    print("✅ FINAL TEST (LR on stratified subset of TRAIN embeddings)")
+    print(" FINAL TEST (LR on stratified subset of TRAIN embeddings)")
     print(f"[FINAL] thr={thr:.2f} | ACC={acc:.4f} | Prec={prec:.4f} | Rec={rec:.4f} | F1={f1_bin:.4f} | F1-mac={f1_mac:.4f}")
     print("[FINAL] Confusion Matrix:\n", cm)
     print("=" * 60)
@@ -649,7 +649,7 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        print(f"❌ Failed: {e}")
+        print(f" Failed: {e}")
         traceback.print_exc()
         gc.collect()
         if torch.cuda.is_available():

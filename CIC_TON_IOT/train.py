@@ -82,7 +82,7 @@ def _print_label_distribution(name: str, y: np.ndarray) -> None:
     dist = {int(k): int(v) for k, v in zip(uniq, cnt)}
     ratio = {int(k): float(v / total) for k, v in zip(uniq, cnt)}
 
-    print(f"\n🏷️  Label distribution ({name})")
+    print(f"\n  Label distribution ({name})")
     print(f"    total = {total}")
     print(f"    counts = {dist}")
     print(f"    ratios = " + ", ".join([f"{k}:{ratio[k]*100:.2f}%" for k in dist.keys()]))
@@ -90,12 +90,12 @@ def _print_label_distribution(name: str, y: np.ndarray) -> None:
 def load_data(cfg: Config):
     data_path = os.path.join(cfg.data_dir, f"{cfg.file_name}.pt")
     if not os.path.exists(data_path):
-        raise FileNotFoundError(f"❌ Data file {data_path} not found!")
+        raise FileNotFoundError(f" Data file {data_path} not found!")
 
     data_all = torch.load(data_path, weights_only=False)
 
     if "attack" not in data_all:
-        raise KeyError("❌ Dataset has no 'attack' field.")
+        raise KeyError(" Dataset has no 'attack' field.")
 
     raw_labels_all = data_all["attack"].clone().cpu().numpy()
     _print_label_distribution("raw attack (multiclass)", raw_labels_all)
@@ -235,7 +235,7 @@ def analyze_classification_detail(y_true_binary: np.ndarray, y_pred_binary: np.n
         })
 
     df = pd.DataFrame(stats).sort_values(by="Wrong", ascending=False)
-    print(f"\n📊 [Epoch {epoch}] Detailed Classification Report:")
+    print(f"\n [Epoch {epoch}] Detailed Classification Report:")
     print(df.to_string(index=False))
     print("-" * 60)
 
@@ -431,10 +431,10 @@ def load_checkpoint(path: str, device: torch.device) -> Dict[str, Any]:
 def run_once(cfg: Config):
     seed_all(cfg.seed)
     device = get_device()
-    print(f"✅ Using device: {device}")
-    print(f"✅ Dataset: {cfg.file_name}")
-    print(f"🧪 Manual params: batch={cfg.batch_size}, lr={cfg.lr}, dim={cfg.hidden_dim}, dropout={cfg.dropout}")
-    print(f"🧭 Val protocol: Thr metric={cfg.thr_metric}")
+    print(f" Using device: {device}")
+    print(f" Dataset: {cfg.file_name}")
+    print(f" Manual params: batch={cfg.batch_size}, lr={cfg.lr}, dim={cfg.hidden_dim}, dropout={cfg.dropout}")
+    print(f" Val protocol: Thr metric={cfg.thr_metric}")
 
     data_all, raw_labels_all = load_data(cfg)
     num_nodes = int(max(data_all.src.max(), data_all.dst.max()) + 1)
@@ -520,7 +520,7 @@ def run_once(cfg: Config):
         test_metrics = compute_metrics_from_prob(test_labels, y_prob_test, thr=t_star)
 
         print(
-            f"\n⭐ Epoch {epoch} Report:"
+            f"\n Epoch {epoch} Report:"
             f"\n   Loss: {avg_loss:.4f} | Best Thr (from Val): {t_star:.2f}"
             f"\n   [VAL]  F1-mac: {val_metrics['f1_mac']:.4f} | Acc: {val_metrics['acc']:.4f}"
             f"\n   [TEST] F1-mac: {test_metrics['f1_mac']:.4f} | Acc: {test_metrics['acc']:.4f}"
@@ -531,15 +531,15 @@ def run_once(cfg: Config):
             best_epoch = epoch
             best_thr = t_star
             save_checkpoint(cfg, ckpt_path, epoch, best_test_f1, best_thr, med_diff, memory, optimizer)
-            print(f"💾 >>> Saved NEW BEST Model (by Test F1) @Ep {epoch} | Test F1: {best_test_f1:.4f}")
+            print(f" >>> Saved NEW BEST Model (by Test F1) @Ep {epoch} | Test F1: {best_test_f1:.4f}")
 
     print("\n" + "=" * 50)
-    print("✅ Training Phase Finished")
-    print(f"🏆 Best Model Found at Epoch: {best_epoch}")
-    print(f"🏆 Best Test F1-Macro: {best_test_f1:.4f}")
+    print(" Training Phase Finished")
+    print(f" Best Model Found at Epoch: {best_epoch}")
+    print(f" Best Test F1-Macro: {best_test_f1:.4f}")
     print("=" * 50)
 
-    print("\n🚀 Starting Final Evaluation with Best Checkpoint...")
+    print("\n Starting Final Evaluation with Best Checkpoint...")
     ckpt = load_checkpoint(ckpt_path, device=device)
     med_diff.load_state_dict(ckpt["med_diff_state"])
     memory.load_state_dict(ckpt["memory_state"])
@@ -560,7 +560,7 @@ def run_once(cfg: Config):
 
     final_results = compute_metrics_from_prob(test_labels, y_prob_final, thr=ckpt["best_threshold"])
 
-    print("\n" + "🔥" * 20)
+    print("\n" + "" * 20)
     print(f"FINAL TEST RESULTS (Best Epoch {ckpt['epoch']})")
     print(f"Threshold: {ckpt['best_threshold']:.2f}")
     print(f"Accuracy:  {final_results['acc']:.4f}")
@@ -568,14 +568,14 @@ def run_once(cfg: Config):
     print(f"Precision: {final_results['prec']:.4f}")
     print(f"Recall:    {final_results['rec']:.4f}")
     print("Confusion Matrix:\n", final_results["cm"])
-    print("🔥" * 20)
+    print("" * 20)
 
 if __name__ == "__main__":
     cfg = Config()
     try:
         run_once(cfg)
     except Exception as e:
-        print(f"❌ Run failed with error: {e}")
+        print(f" Run failed with error: {e}")
         traceback.print_exc()
         gc.collect()
         torch.cuda.empty_cache()

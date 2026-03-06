@@ -78,7 +78,7 @@ def get_device() -> torch.device:
 def load_data(cfg: Config):
     data_path = os.path.join(cfg.data_dir, f"{cfg.file_name}.pt")
     if not os.path.exists(data_path):
-        raise FileNotFoundError(f"❌ Data file {data_path} not found!")
+        raise FileNotFoundError(f" Data file {data_path} not found!")
 
     data_all = torch.load(data_path, weights_only=False)
 
@@ -218,7 +218,7 @@ def analyze_classification_detail(y_true_binary: np.ndarray, y_pred_binary: np.n
         })
 
     df = pd.DataFrame(stats).sort_values(by="Wrong", ascending=False)
-    print(f"\n📊 [Epoch {epoch}] Detailed Classification Report:")
+    print(f"\n [Epoch {epoch}] Detailed Classification Report:")
     print(df.to_string(index=False))
     print("-" * 60)
 
@@ -410,17 +410,17 @@ def load_checkpoint(path: str, device: torch.device) -> Dict[str, Any]:
 def run_once(cfg: Config):
     seed_all(cfg.seed)
     device = get_device()
-    print(f"✅ Using device: {device}")
-    print(f"✅ Dataset: {cfg.file_name}")
-    print(f"🧪 Manual params: batch={cfg.batch_size}, lr={cfg.lr}, dim={cfg.hidden_dim}, dropout={cfg.dropout}")
-    print(f"🧭 Val protocol: Thr metric={cfg.thr_metric}")
+    print(f" Using device: {device}")
+    print(f" Dataset: {cfg.file_name}")
+    print(f" Manual params: batch={cfg.batch_size}, lr={cfg.lr}, dim={cfg.hidden_dim}, dropout={cfg.dropout}")
+    print(f" Val protocol: Thr metric={cfg.thr_metric}")
 
     data_all, raw_labels_all = load_data(cfg)
 
     uniq, cnt = np.unique(raw_labels_all, return_counts=True)
     total = cnt.sum()
 
-    print("\n📊 Overall dataset distribution (raw attack labels):")
+    print("\n Overall dataset distribution (raw attack labels):")
     print(f"    total samples = {total}")
     print(f"    num classes   = {len(uniq)}")
 
@@ -517,12 +517,12 @@ def run_once(cfg: Config):
             best_epoch = epoch
             best_thr = t_star
             save_checkpoint(cfg, ckpt_path, epoch, best_val_f1, best_thr, med_diff, memory, optimizer)
-            print(f"💾 Saved BEST checkpoint @Ep {epoch} | best_val_f1={best_val_f1:.4f}, thr={best_thr:.2f} -> {ckpt_path}")
+            print(f" Saved BEST checkpoint @Ep {epoch} | best_val_f1={best_val_f1:.4f}, thr={best_thr:.2f} -> {ckpt_path}")
 
     print("\n" + "=" * 50)
-    print("✅ Manual Run Finished")
-    print(f"🏆 Best Val F1-Mac (over {cfg.tune_epochs} epochs): {best_val_f1:.4f} @Ep {best_epoch}")
-    print(f"🏆 Best threshold (from VAL): {best_thr:.2f}")
+    print(" Manual Run Finished")
+    print(f" Best Val F1-Mac (over {cfg.tune_epochs} epochs): {best_val_f1:.4f} @Ep {best_epoch}")
+    print(f" Best threshold (from VAL): {best_thr:.2f}")
     print("=" * 50)
 
     ckpt = load_checkpoint(ckpt_path, device=device)
@@ -550,7 +550,7 @@ def run_once(cfg: Config):
     test_metrics = compute_metrics_from_prob(test_labels, y_prob_test, thr=best_thr)
 
     print("\n" + "=" * 50)
-    print(f"✅ FINAL TEST (Best Val @Ep {ckpt['epoch']}, best_val_f1={ckpt['best_val_f1']:.4f})")
+    print(f" FINAL TEST (Best Val @Ep {ckpt['epoch']}, best_val_f1={ckpt['best_val_f1']:.4f})")
     print(f"[FINAL] using threshold={best_thr:.2f}")
     print(
         f"[FINAL] "
@@ -572,7 +572,7 @@ if __name__ == "__main__":
     try:
         run_once(cfg)
     except Exception as e:
-        print(f"❌ Run failed with error: {e}")
+        print(f" Run failed with error: {e}")
         traceback.print_exc()
         gc.collect()
         torch.cuda.empty_cache()

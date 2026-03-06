@@ -201,7 +201,7 @@ def parse_args():
 def main():
     args = parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("✅ device:", device)
+    print(" device:", device)
 
     if not os.path.exists(args.ckpt): raise FileNotFoundError(args.ckpt)
     ckpt = torch.load(args.ckpt, map_location="cpu")
@@ -238,10 +238,10 @@ def main():
     neighbor_loader.reset_state()
     assoc = torch.empty(num_nodes, dtype=torch.long, device=device)
 
-    print("⏳ Rolling out Training data...")
+    print(" Rolling out Training data...")
     Z_train_full = extract_pair_embeddings_with_rollout(med_diff, memory, neighbor_loader, assoc, device, train_loader)
 
-    print("🧪 Extracting Test data...")
+    print(" Extracting Test data...")
     Z_test_full = extract_pair_embeddings_no_rollout(med_diff, memory, neighbor_loader, assoc, device, test_loader)
 
     rss_before_lr = get_process_rss_mb()
@@ -263,7 +263,7 @@ def main():
         Z_test_input = Z_test_full
 
     clf = LogisticRegression(max_iter=4000, class_weight="balanced", solver="liblinear", random_state=42)
-    print(f"🚀 Fitting LR probe on {len(y_train_sub)} samples...")
+    print(f" Fitting LR probe on {len(y_train_sub)} samples...")
     with PerfTimer(device) as tt:
         clf.fit(Z_train_input, y_train_sub)
     lr_fit_ms = tt.elapsed_ms
@@ -284,11 +284,11 @@ def main():
     f1_mac = f1_score(test_labels, y_pred_test, average="macro", zero_division=0)
     cm = confusion_matrix(test_labels, y_pred_test)
 
-    print("\n⏱️ LR probe latency:")
+    print("\n LR probe latency:")
     print(f"    - fit     : {lr_fit_ms:.2f} ms")
     print(f"    - predict : {lr_pred_ms:.2f} ms (N_test={len(test_labels)}, {lr_pred_ms/max(1,len(test_labels)):.6f} ms/sample)")
 
-    print("\n🧠 Memory usage (LR section):")
+    print("\n Memory usage (LR section):")
     print(f"    - Host RSS before: {rss_before_lr:.2f} MB")
     print(f"    - Host RSS after : {rss_after_lr:.2f} MB (delta={rss_after_lr - rss_before_lr:.2f} MB)")
     if device.type == "cuda":
@@ -296,7 +296,7 @@ def main():
         print(f"    - CUDA peak    (MB): peak_alloc={cuda_after_lr['peak_alloc']:.2f}, peak_reserved={cuda_after_lr['peak_reserved']:.2f}")
 
     print("\n" + "=" * 60)
-    print("✅ FINAL TEST (LR on stratified subset of TRAIN embeddings)")
+    print(" FINAL TEST (LR on stratified subset of TRAIN embeddings)")
     print(f"[FINAL] thr={thr:.2f} | ACC={acc:.4f} | Prec={prec:.4f} | Rec={rec:.4f} | F1={f1_bin:.4f} | F1-mac={f1_mac:.4f}")
     print("[FINAL] Confusion Matrix:\n", cm)
     print("=" * 60)
@@ -310,7 +310,7 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        print(f"❌ Failed: {e}")
+        print(f" Failed: {e}")
         traceback.print_exc()
         gc.collect()
         if torch.cuda.is_available():

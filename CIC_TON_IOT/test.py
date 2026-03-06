@@ -256,7 +256,7 @@ def parse_args():
 def main():
     args = parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("✅ device:", device)
+    print(" device:", device)
 
     rss0 = get_process_rss_mb()
     if device.type == "cuda":
@@ -264,9 +264,9 @@ def main():
         torch.cuda.reset_peak_memory_stats()
         torch.cuda.synchronize()
     cuda0 = cuda_mem_mb()
-    print(f"🧠 Host RSS baseline: {rss0:.2f} MB")
+    print(f" Host RSS baseline: {rss0:.2f} MB")
     if device.type == "cuda":
-        print(f"🎮 CUDA baseline (MB): alloc={cuda0['alloc']:.2f}, reserved={cuda0['reserved']:.2f}")
+        print(f" CUDA baseline (MB): alloc={cuda0['alloc']:.2f}, reserved={cuda0['reserved']:.2f}")
 
     ckpt_path = resolve_pth_path(args.ckpt)
     if not os.path.exists(ckpt_path):
@@ -280,10 +280,10 @@ def main():
     hidden_dim = int(hparams.get("hidden_dim", 128))
     dropout = float(hparams.get("dropout", 0.2))
 
-    print(f"✅ ckpt: {os.path.basename(ckpt_path)} | epoch={ckpt.get('epoch')} best_val_f1={ckpt.get('best_val_f1')}")
-    print(f"🎯 threshold: {thr:.4f} ({'ckpt' if args.thr is None else 'manual'})")
-    print(f"🧩 med_diff: hidden_dim={hidden_dim} dropout={dropout}")
-    print(f"🧪 LR train frac (stratified): {args.train_frac}")
+    print(f" ckpt: {os.path.basename(ckpt_path)} | epoch={ckpt.get('epoch')} best_val_f1={ckpt.get('best_val_f1')}")
+    print(f" threshold: {thr:.4f} ({'ckpt' if args.thr is None else 'manual'})")
+    print(f" med_diff: hidden_dim={hidden_dim} dropout={dropout}")
+    print(f" LR train frac (stratified): {args.train_frac}")
 
     if not os.path.exists(args.data):
         raise FileNotFoundError(f"Data not found: {args.data}")
@@ -338,13 +338,13 @@ def main():
     neighbor_loader.reset_state()
     assoc = torch.empty(num_nodes, dtype=torch.long, device=device)
 
-    print("⏳ Rolling out Training data (Updating Memory)...")
+    print(" Rolling out Training data (Updating Memory)...")
     Z_train_full = extract_pair_embeddings_with_rollout(med_diff, memory, neighbor_loader, assoc, device, train_loader)
 
-    print("🧪 Extracting Test data (Static Memory)...")
+    print(" Extracting Test data (Static Memory)...")
     Z_test_full = extract_pair_embeddings_no_rollout(med_diff, memory, neighbor_loader, assoc, device, test_loader)
 
-    print("\n🎨 Generating t-SNE visualization...")
+    print("\n Generating t-SNE visualization...")
     try:
 
         n_test_samples = len(test_labels)
@@ -384,10 +384,10 @@ def main():
         output_fig_path = f"tsne_vis_{ckpt_name}.png"
         plt.savefig(output_fig_path)
         plt.close()
-        print(f"✅ Visualization saved to: {output_fig_path}")
+        print(f" Visualization saved to: {output_fig_path}")
 
     except Exception as e:
-        print(f"⚠️ Visualization failed: {e}")
+        print(f" Visualization failed: {e}")
         traceback.print_exc()
 
     rss_before_lr = get_process_rss_mb()
@@ -416,7 +416,7 @@ def main():
         random_state=42
     )
 
-    print(f"🚀 Fitting LR probe on {len(y_train_sub)} samples...")
+    print(f" Fitting LR probe on {len(y_train_sub)} samples...")
     with PerfTimer(device) as tt:
         clf.fit(Z_train_input, y_train_sub)
     lr_fit_ms = tt.elapsed_ms
@@ -436,11 +436,11 @@ def main():
     f1_mac = f1_score(test_labels, y_pred_test, average="macro", zero_division=0)
     cm = confusion_matrix(test_labels, y_pred_test)
 
-    print("\n⏱️ LR probe latency:")
+    print("\n LR probe latency:")
     print(f"    - fit     : {lr_fit_ms:.2f} ms")
     print(f"    - predict : {lr_pred_ms:.2f} ms (N_test={len(test_labels)}, {lr_pred_ms/max(1,len(test_labels)):.6f} ms/sample)")
 
-    print("\n🧠 Memory usage (LR section):")
+    print("\n Memory usage (LR section):")
     print(f"    - Host RSS before: {rss_before_lr:.2f} MB")
     print(f"    - Host RSS after : {rss_after_lr:.2f} MB (delta={rss_after_lr - rss_before_lr:.2f} MB)")
     if device.type == "cuda":
@@ -448,7 +448,7 @@ def main():
         print(f"    - CUDA peak    (MB): peak_alloc={cuda_after_lr['peak_alloc']:.2f}, peak_reserved={cuda_after_lr['peak_reserved']:.2f}")
 
     print("\n" + "=" * 60)
-    print("✅ FINAL TEST (LR on stratified subset of TRAIN embeddings)")
+    print(" FINAL TEST (LR on stratified subset of TRAIN embeddings)")
     print(f"[FINAL] thr={thr:.2f} | ACC={acc:.4f} | Prec={prec:.4f} | Rec={rec:.4f} | F1={f1_bin:.4f} | F1-mac={f1_mac:.4f}")
     print("[FINAL] Confusion Matrix:\n", cm)
     print("=" * 60)
@@ -462,7 +462,7 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        print(f"❌ Failed: {e}")
+        print(f" Failed: {e}")
         traceback.print_exc()
         gc.collect()
         if torch.cuda.is_available():
