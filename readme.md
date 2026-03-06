@@ -12,60 +12,9 @@ Users can directly enter the corresponding dataset directory and run the provide
 
 
 
-\---
-
-\# 另外一个更简单的方法（我强烈推荐）
-
-用 **4个空格缩进**：
-
-```
-    .
-​    ├── 2024-iomt-traffic-data/
-​    │   ├── train.py
-​    │   ├── test.py
-​    │   └── checkpoints/
-​    ├── CIC_IOMT_2024/
-​    │   ├── train.py
-​    │   ├── test.py
-​    │   └── checkpoints/
-```
-
-Markdown 会自动识别为代码块。
-
-\---
-
-\# 最推荐的论文仓库写法（更好看）
-
-\```markdown
-\## Project Structure
-
-\```
-Med-Diff
-├── 2024-iomt-traffic-data
-├── CIC_IOMT_2024
-├── CIC_TON_IOT
-├── NF-UNSW-NB15
-├── data
-├── model
-├── utils
-└── README.md
-\```
-\```
-
-\---
-
-
-
-
-
-
-
 ## **Project Structure**
 
-\````markdown
-\## Project Structure
-
-\```text
+```
 .
 ├── 2024-iomt-traffic-data/      # IoMT traffic dataset experiments
 │   ├── train.py                 # Model training script
@@ -95,50 +44,7 @@ Med-Diff
 
 ├── link.txt                     # Google Drive dataset link
 └── README.md                    # Project documentation
-
-
-
-
-
-
-
-\```text
-
-.
-├── 2024-iomt-traffic-data/      # IoMT traffic dataset experiments
-│   ├── train.py                 # Model training script
-│   ├── test.py                  # Model inference and evaluation
-│   └── checkpoints/             # Saved model weights (.pth)
-
-├── CIC_IOMT_2024/               # CIC-IoMT-2024 dataset experiments
-│   ├── train.py
-│   ├── test.py
-│   └── checkpoints/
-
-├── CIC_TON_IOT/                 # TON-IoT dataset experiments
-│   ├── train.py
-│   ├── test.py
-│   └── checkpoints/
-
-├── NF-UNSW-NB15/                # NF-UNSW-NB15 dataset experiments
-│   ├── train.py
-│   ├── test.py
-│   └── checkpoints/
-
-├── data/                        # Preprocessed graph datasets (.pt)
-
-├── model/                       # Model architecture implementation
-
-├── utils/                       # Utility scripts
-
-├── link.txt                     # Google Drive dataset link
-└── README.md                    # Project documentation
-
-
-
-\```
-
-
+```
 
 
 
