@@ -16,6 +16,7 @@ Users can directly enter the corresponding dataset directory and run the provide
 
 ## **Project Structure**
 
+\```text
 .
 ├── 2024-iomt-traffic-data/      # IoMT traffic dataset experiments
 │   ├── train.py                 # Model training script
@@ -40,10 +41,12 @@ Users can directly enter the corresponding dataset directory and run the provide
 ├── data/                        # Preprocessed graph datasets (.pt)
 
 ├── model/                       # Model architecture implementation
+
 ├── utils/                       # Utility scripts
 
 ├── link.txt                     # Google Drive dataset link
 └── README.md                    # Project documentation
+\```
 
 
 
@@ -71,13 +74,15 @@ After downloading, place the processed datasets into the `data/` directory.
 
 Example:
 
+\```text
+
 data/
 ├── 2024-iomt-traffic-data.pt
 ├── CIC_IOMT_2024.pt
 ├── CIC_TON_IOT.pt
 └── NF-UNSW-NB15.pt
 
-
+\```
 
 ## Training
 
