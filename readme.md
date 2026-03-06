@@ -104,16 +104,15 @@ python 2024-iomt-traffic-data/test.py \
 
 ## Installation
 
-**Install dependencies:**
-
-pip install -r requirements.txt
-
 **Recommended environment:**
 
-Python 3.10
-PyTorch
-DGL
-CUDA
+```
+PyTorch Version: 2.4.0+cu121
+
+CUDA Version (Used by PyTorch): 12.1
+
+DGL Version: 2.4.0+cu121
+```
 
 
 
