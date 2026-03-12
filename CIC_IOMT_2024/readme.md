@@ -27,8 +27,7 @@ Arguments
 
 - `--ckpt` Path to the pretrained model checkpoint.
 - `--data` Path to the graph dataset file (`.pt`).
-- `--use_scaler` Enable feature normalization.
-- `--train_frac` Fraction of training data.
+- `--train_frac` Tag data ratio.
 - `--thr` Decision threshold for binary classification.
 
 Model Weights (Google Drive)
