@@ -122,5 +122,5 @@ DGL Version: 2.4.0+cu121
 | -------------- | ----------------------------------- | ---------------------------------- |
 | `--ckpt`       | Path to pretrained model checkpoint | `checkpoints/model.pth`            |
 | `--data`       | Path to graph dataset file          | `./data/2024-iomt-traffic-data.pt` |
-| `--train_frac` | Tag data ratio                      | 0.01                               |
+| `--train_frac` | Tag data ratio                      | `0.01`                             |
 | `--thr`        | Threshold for anomaly detection     | `0.56`                             |
