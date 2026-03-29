@@ -453,12 +453,12 @@ def run_once(cfg: Config):
     ).to(device)
 
     optimizer = torch.optim.AdamW(
-        list(med_diff.parameters()) + list(memory.parameters()),
+        list(med_diff.parameters())),
         lr=cfg.lr,
         weight_decay=cfg.weight_decay
     )
 
-    assoc = torch.empty(num_nodes, dtype=torch.long, device=device)
+    assoc = torch.empty(num_nodes, dtype=torch.long)
 
     ckpt_path = os.path.join(cfg.ckpt_dir, f"best_{cfg.file_name}.pth")
 
