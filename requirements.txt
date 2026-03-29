@@ -1,0 +1,20 @@
+# Med-Diff project dependencies
+# Recommended: Python 3.10 (based on your readme env path: *_py310)
+
+numpy>=1.23,<2.0
+pandas>=1.5
+scipy>=1.10
+scikit-learn>=1.2
+matplotlib>=3.6
+psutil>=5.9
+tqdm>=4.64
+
+# Core deep learning stack
+torch>=2.1
+torch-geometric>=2.4
+torch-scatter>=2.1
+
+# Note:
+# torch-geometric / torch-scatter need versions compatible with your torch+CUDA.
+# If direct pip install fails, install via the official wheel index:
+# https://data.pyg.org/whl/
