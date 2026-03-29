@@ -82,7 +82,7 @@ data/
 
 ## Training
 
-Example (IoMT dataset):
+Example:
 
 CUDA_VISIBLE_DEVICES=1 \ python 2024-iomt-traffic-data/train.py
 
