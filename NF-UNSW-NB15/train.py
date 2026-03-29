@@ -285,8 +285,8 @@ def extract_embeddings_no_rollout(med_diff, memory, neighbor_loader, assoc: torc
 
         out = med_diff(z_mem, ed.to(device), norm_factor.to(device), t=t)
         z = out[0] if isinstance(out, (tuple, list)) else out
-
-        pair_emb = torch.cat([z[assoc[src]], z[assoc[dst]]], dim=-1)
+	pair_emb = torch.cat([z[assoc[src]], z[assoc[dst]]], dim=0)
+        
         all_pairs.append(pair_emb.cpu())
 
     return torch.cat(all_pairs, dim=0).numpy()
@@ -312,7 +312,7 @@ def extract_embeddings_with_rollout(med_diff, memory, neighbor_loader, assoc: to
         out = med_diff(z_mem, ed.to(device), norm_factor.to(device), t=t)
         z = out[0] if isinstance(out, (tuple, list)) else out
 
-        pair_emb = torch.cat([z[assoc[src]], z[assoc[dst]]], dim=-1)
+        pair_emb = torch.cat([z[assoc[src]], z[assoc[dst]]], dim=0)
         all_pairs.append(pair_emb.cpu())
 
         memory.update_state(src, dst, t, msg)
@@ -364,12 +364,12 @@ def train_one_epoch(cfg: Config, med_diff, memory, neighbor_loader, assoc, devic
 
         loss.backward()
         optimizer.step()
-
+	total_loss += loss
         memory.update_state(src, dst, t, msg)
         neighbor_loader.insert(src, dst)
         memory.detach()
 
-        total_loss += float(loss.item())
+        
         pbar.set_postfix({"loss": f"{loss.item():.4f}"})
 
     pbar.close()
