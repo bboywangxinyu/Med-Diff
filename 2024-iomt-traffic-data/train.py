@@ -24,7 +24,6 @@ from sklearn.metrics import (
     recall_score,
     confusion_matrix,
 )
-from sklearn.preprocessing import StandardScaler
 
 from torch_geometric.loader import TemporalDataLoader
 from torch_geometric.nn import TGNMemory
@@ -54,14 +53,14 @@ class Config:
     val_ratio: float = 0.1
 
     batch_size: int = 512
-    lr: float = 0.025
+    lr: float = 0.25
     weight_decay: float = 1e-4
 
     hidden_dim: int = 128
     dropout: float = 0.17
 
     neighbor_size: int = 20
-    tune_epochs: int = 5
+    tune_epochs: int = 100
 
     lr_max_iter: int = 2000
     lr_solver: str = "liblinear"
@@ -385,21 +384,6 @@ def save_checkpoint(cfg: Config, path: str, epoch: int, best_val_f1: float, best
             "best_threshold": float(best_threshold),
             "med_diff_state": med_diff.state_dict(),
             "memory_state": memory.state_dict(),
-            "optimizer_state": optimizer.state_dict(),
-            "hparams": {
-                "batch_size": cfg.batch_size,
-                "lr": cfg.lr,
-                "weight_decay": cfg.weight_decay,
-                "hidden_dim": cfg.hidden_dim,
-                "dropout": cfg.dropout,
-                "train_ratio": cfg.train_ratio,
-                "val_ratio": cfg.val_ratio,
-                "neighbor_size": cfg.neighbor_size,
-
-                "use_scaler": cfg.use_scaler,
-                "thr_metric": cfg.thr_metric,
-                "thr_grid_n": cfg.thr_grid_n,
-            },
         },
         path
     )
@@ -468,7 +452,7 @@ def run_once(cfg: Config):
     ).to(device)
 
     optimizer = torch.optim.AdamW(
-        list(med_diff.parameters())),
+        list(med_diff.parameters()),
         lr=cfg.lr,
         weight_decay=cfg.weight_decay
     )
@@ -477,22 +461,14 @@ def run_once(cfg: Config):
 
     ckpt_path = os.path.join(cfg.ckpt_dir, f"best_{cfg.file_name}_med_diff.pth")
 
-    best_val_f1 = -1.0
+    best_val_f1 = 1.0
     best_epoch = -1
     best_thr = 0.5
 
     for epoch in range(1, cfg.tune_epochs + 1):
-        gc.collect()
-        torch.cuda.empty_cache()
-
         avg_loss = train_one_epoch(cfg, med_diff, memory, neighbor_loader, assoc, device, train_loader, optimizer, epoch)
 
         Z_train, Z_val = get_train_eval_embeddings(cfg, med_diff, memory, neighbor_loader, assoc, device, train_loader, val_loader)
-
-        if cfg.use_scaler:
-            scaler = StandardScaler()
-            Z_train = scaler.fit_transform(Z_train)
-            Z_val = scaler.transform(Z_val)
 
         clf = build_lr_probe(cfg)
         clf.fit(Z_train, train_labels)
@@ -510,8 +486,6 @@ def run_once(cfg: Config):
             f"thr={t_star:.2f}"
         )
 
-        analyze_classification_detail(val_labels, val_metrics["y_pred"], val_raw, epoch)
-
         if val_metrics["f1_mac"] > best_val_f1:
             best_val_f1 = val_metrics["f1_mac"]
             best_epoch = epoch
@@ -525,47 +499,7 @@ def run_once(cfg: Config):
     print(f" Best threshold (from VAL): {best_thr:.2f}")
     print("=" * 50)
 
-    ckpt = load_checkpoint(ckpt_path, device=device)
-    med_diff.load_state_dict(ckpt["med_diff_state"])
-    memory.load_state_dict(ckpt["memory_state"])
-    med_diff.eval()
-    memory.eval()
-
-    best_thr = float(ckpt.get("best_threshold", 0.5))
-
-    memory.reset_state()
-    neighbor_loader.reset_state()
-    Z_train_best = extract_embeddings_with_rollout(med_diff, memory, neighbor_loader, assoc, device, train_loader)
-    Z_test_best = extract_embeddings_no_rollout(med_diff, memory, neighbor_loader, assoc, device, test_loader)
-
-    if cfg.use_scaler:
-        scaler = StandardScaler()
-        Z_train_best = scaler.fit_transform(Z_train_best)
-        Z_test_best = scaler.transform(Z_test_best)
-
-    clf = build_lr_probe(cfg)
-    clf.fit(Z_train_best, train_labels)
-
-    y_prob_test = clf.predict_proba(Z_test_best)[:, 1]
-    test_metrics = compute_metrics_from_prob(test_labels, y_prob_test, thr=best_thr)
-
-    print("\n" + "=" * 50)
-    print(f" FINAL TEST (Best Val @Ep {ckpt['epoch']}, best_val_f1={ckpt['best_val_f1']:.4f})")
-    print(f"[FINAL] using threshold={best_thr:.2f}")
-    print(
-        f"[FINAL] "
-        f"ACC={test_metrics['acc']:.4f} | "
-        f"Prec={test_metrics['prec']:.4f} | "
-        f"Rec={test_metrics['rec']:.4f} | "
-        f"F1={test_metrics['f1']:.4f} | "
-        f"F1-mac={test_metrics['f1_mac']:.4f}"
-    )
-    print("[FINAL] Confusion Matrix:\n", test_metrics["cm"])
-    print("=" * 50)
-
-    del med_diff, memory, optimizer, clf
-    gc.collect()
-    torch.cuda.empty_cache()
+    del med_diff, memory, optimizer
 
 if __name__ == "__main__":
     cfg = Config()
@@ -574,5 +508,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f" Run failed with error: {e}")
         traceback.print_exc()
-        gc.collect()
-        torch.cuda.empty_cache()

@@ -24,7 +24,6 @@ from sklearn.metrics import (
     recall_score,
     confusion_matrix,
 )
-from sklearn.preprocessing import StandardScaler
 
 from torch_geometric.loader import TemporalDataLoader
 from torch_geometric.nn import TGNMemory
@@ -61,7 +60,7 @@ class Config:
     dropout: float = 0.3
 
     neighbor_size: int = 20
-    tune_epochs: int = 5
+    tune_epochs: int = 100
 
     lr_max_iter: int = 2000
     lr_solver: str = "liblinear"
@@ -386,11 +385,11 @@ def train_one_epoch(cfg: Config, med_diff, memory, neighbor_loader, assoc, devic
 
         loss.backward()
         optimizer.step()
-	
+
         memory.update_state(src, dst, t, msg)
         neighbor_loader.insert(src, dst)
         memory.detach()
-	total_loss += loss
+        total_loss += loss
         
         pbar.set_postfix({"loss": f"{loss.item():.4f}"})
 
@@ -406,21 +405,6 @@ def save_checkpoint(cfg: Config, path: str, epoch: int, best_val_f1: float, best
             "best_threshold": float(best_threshold),
             "med_diff_state": med_diff.state_dict(),
             "memory_state": memory.state_dict(),
-            "optimizer_state": optimizer.state_dict(),
-            "hparams": {
-                "batch_size": cfg.batch_size,
-                "lr": cfg.lr,
-                "weight_decay": cfg.weight_decay,
-                "hidden_dim": cfg.hidden_dim,
-                "dropout": cfg.dropout,
-                "train_ratio": cfg.train_ratio,
-                "val_ratio": cfg.val_ratio,
-                "neighbor_size": cfg.neighbor_size,
-
-                "use_scaler": cfg.use_scaler,
-                "thr_metric": cfg.thr_metric,
-                "thr_grid_n": cfg.thr_grid_n,
-            },
         },
         path
     )
@@ -475,23 +459,20 @@ def run_once(cfg: Config):
     ).to(device)
 
     optimizer = torch.optim.AdamW(
-        list(med_diff.parameters())),
+        list(med_diff.parameters()),
         lr=cfg.lr,
         weight_decay=cfg.weight_decay
     )
 
     assoc = torch.empty(num_nodes, dtype=torch.long)
 
-    ckpt_path = os.path.join(cfg.ckpt_dir, f"best_{cfg.file_name}.pth")
+    ckpt_path = os.path.join(cfg.ckpt_dir, f"best_{cfg.file_name}_run.pth")
 
-    best_test_f1 = -1.0
+    best_test_f1 = 1.0
     best_epoch = -1
     best_thr = 0.5
 
     for epoch in range(1, cfg.tune_epochs + 1):
-        gc.collect()
-        torch.cuda.empty_cache()
-
         avg_loss = train_one_epoch(cfg, med_diff, memory, neighbor_loader, assoc, device, train_loader, optimizer, epoch)
 
         memory.reset_state()
@@ -502,12 +483,6 @@ def run_once(cfg: Config):
         Z_val = extract_embeddings_no_rollout(med_diff, memory, neighbor_loader, assoc, device, val_loader)
 
         Z_test = extract_embeddings_no_rollout(med_diff, memory, neighbor_loader, assoc, device, test_loader)
-
-        if cfg.use_scaler:
-            scaler = StandardScaler()
-            Z_train = scaler.fit_transform(Z_train)
-            Z_val = scaler.transform(Z_val)
-            Z_test = scaler.transform(Z_test)
 
         clf = build_lr_probe(cfg)
         clf.fit(Z_train, train_labels)
@@ -539,36 +514,7 @@ def run_once(cfg: Config):
     print(f" Best Test F1-Macro: {best_test_f1:.4f}")
     print("=" * 50)
 
-    print("\n Starting Final Evaluation with Best Checkpoint...")
-    ckpt = load_checkpoint(ckpt_path, device=device)
-    med_diff.load_state_dict(ckpt["med_diff_state"])
-    memory.load_state_dict(ckpt["memory_state"])
-
-    memory.reset_state()
-    neighbor_loader.reset_state()
-    Z_train_final = extract_embeddings_with_rollout(med_diff, memory, neighbor_loader, assoc, device, train_loader)
-    Z_test_final = extract_embeddings_no_rollout(med_diff, memory, neighbor_loader, assoc, device, test_loader)
-
-    if cfg.use_scaler:
-        scaler = StandardScaler()
-        Z_train_final = scaler.fit_transform(Z_train_final)
-        Z_test_final = scaler.transform(Z_test_final)
-
-    clf_final = build_lr_probe(cfg)
-    clf_final.fit(Z_train_final, train_labels)
-    y_prob_final = clf_final.predict_proba(Z_test_final)[:, 1]
-
-    final_results = compute_metrics_from_prob(test_labels, y_prob_final, thr=ckpt["best_threshold"])
-
-    print("\n" + "" * 20)
-    print(f"FINAL TEST RESULTS (Best Epoch {ckpt['epoch']})")
-    print(f"Threshold: {ckpt['best_threshold']:.2f}")
-    print(f"Accuracy:  {final_results['acc']:.4f}")
-    print(f"F1-Macro:  {final_results['f1_mac']:.4f}")
-    print(f"Precision: {final_results['prec']:.4f}")
-    print(f"Recall:    {final_results['rec']:.4f}")
-    print("Confusion Matrix:\n", final_results["cm"])
-    print("" * 20)
+    del med_diff, memory, optimizer
 
 if __name__ == "__main__":
     cfg = Config()
@@ -577,5 +523,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f" Run failed with error: {e}")
         traceback.print_exc()
-        gc.collect()
-        torch.cuda.empty_cache()
