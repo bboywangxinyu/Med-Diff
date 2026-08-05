@@ -1,8 +1,0 @@
-
-
-dataset
-https://drive.google.com/file/d/19XTof03471rN5g5WCQk8c1SOz7aVsNTu/view?usp=drive_link
-
-
-checkpoints
-https://drive.google.com/file/d/1TTWoiRlvHNCs6N4mNDVDBAzqdnA9JYK-/view?usp=drive_link
