@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+
+# External datasets
+data/*.pt
+
+# Runtime outputs
+tsne_*.png
+tsne_vis_*.png
+*.log
+
+# Locally downloaded or newly trained weights
+*/checkpoints/*.pth

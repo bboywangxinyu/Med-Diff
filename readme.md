@@ -1,126 +1,90 @@
-# Med-Diff: Evaluation & Testing Code
+# Med-Diff Evaluation Code
 
-This repository hosts the official testing and evaluation scripts for **Med-Diff**.
+This repository contains the runnable training and evaluation code for Med-Diff
+traffic anomaly detection experiments. The repository is intentionally kept
+lean: source code, model definitions, documentation, the architecture figure,
+and the checkpoint files that are currently available locally.
 
-To facilitate reproducibility for reviewers and other interested researchers, we organize experiments for different datasets into **separate directories**.
+Large graph datasets, generated visualizations, Python bytecode caches, and
+unused helper modules are not kept in the working tree.
 
-Each dataset directory contains its own `train.py`, `test.py`, and `checkpoints/` folder.  
+## Repository Layout
 
-Users can directly enter the corresponding dataset directory and run the provided scripts to reproduce the results.
-
-**This design allows reviewers to easily reproduce the results by running the scripts within each dataset-specific directory.**
-
-
-
-## **Project Structure**
-
-```
+```text
 .
-├── 2024-iomt-traffic-data/      # IoMT traffic dataset experiments
-│   ├── train.py                 # Model training script
-│   ├── test.py                  # Model inference and evaluation
-│   └── checkpoints/             # Saved model weights (.pth)
-
-├── CIC_IOMT_2024/               # CIC-IoMT-2024 dataset experiments
-│   ├── train.py
-│   ├── test.py
-│   └── checkpoints/
-
-├── CIC_TON_IOT/                 # TON-IoT dataset experiments
-│   ├── train.py
-│   ├── test.py
-│   └── checkpoints/
-
-├── NF-UNSW-NB15/                # NF-UNSW-NB15 dataset experiments
-│   ├── train.py
-│   ├── test.py
-│   └── checkpoints/
-
-├── data/                        # Preprocessed graph datasets (.pt)
-
-├── model/                       # Model architecture implementation
-
-├── utils/                       # Utility scripts
-
-├── link.txt                     # Google Drive dataset link
-└── README.md                    # Project documentation
+|-- 2024-iomt-traffic-data/
+|   |-- train.py
+|   |-- test.py
+|   `-- readme.md
+|-- CIC_IOMT_2024/
+|   |-- train.py
+|   |-- test.py
+|   |-- readme.md
+|   `-- checkpoints/CIC-IOMT-2024.pth
+|-- CIC_TON_IOT/
+|   |-- train.py
+|   |-- test.py
+|   |-- readme.md
+|   `-- checkpoints/best_CIC-ToN-IoT.pth
+|-- NF-UNSW-NB15/
+|   |-- train.py
+|   |-- test.py
+|   `-- readme.md
+|-- Figure/model_architecture.png
+|-- model/Med_Diff.py
+|-- utils/
+|-- link.txt
+`-- requirements.txt
 ```
 
+Empty checkpoint folders are not stored. If you download or train additional
+weights, create the corresponding `checkpoints/` directory under the dataset
+folder.
 
+## Model Overview
 
-## Model Architecture
+`model/Med_Diff.py` defines the Med-Diff encoder. The dataset scripts combine
+PyTorch Geometric temporal graph loading, `TGNMemory`, recent-neighbor rollout,
+and the Med-Diff implicit diffusion module to produce edge-pair embeddings.
 
-The overall architecture of the proposed framework is shown below.
+Training uses self-supervised representation learning losses inside Med-Diff.
+Evaluation fits a lightweight `LogisticRegression` probe on a configurable
+fraction of training embeddings and applies a binary anomaly threshold.
 
-**Overview of the proposed model architecture, consisting of feature extraction (1), flow graph construction (2), FDMO-based disparity enhancement (3), diffusion enhancement mechanism (4), and self-supervised representation learning (5)**
+![Med-Diff framework](Figure/model_architecture.png)
 
-![Framework](Figure/model_architecture.png)
+## Environment
 
-
-
-## Dataset
-
-Due to the **large size of the datasets**, they are not included in this repository.
-
-The datasets can be downloaded from **Google Drive**.
-
-Please refer to: **link.txt**
-
-After downloading, place the processed datasets into the `data/` directory.
-
-Example:
-
-
-
-```
-data/
-├── 2024-iomt-traffic-data.pt
-├── CIC_IOMT_2024.pt
-├── CIC_TON_IOT.pt
-└── NF-UNSW-NB15.pt
-```
+The original experiments target Python 3.10 with a CUDA-compatible PyTorch and
+PyTorch Geometric stack. The project requirements are listed in
+`requirements.txt`; install `torch`, `torch-geometric`, and `torch-scatter`
+using wheels that match your CUDA and PyTorch versions.
 
 ## Training
 
-Example:
+Training hyperparameters are defined in each dataset script's `Config` class.
+Run from the repository root:
 
-CUDA_VISIBLE_DEVICES=1 \ python 2024-iomt-traffic-data/train.py
-
-
+```bash
+python 2024-iomt-traffic-data/train.py
+python CIC_IOMT_2024/train.py
+python CIC_TON_IOT/train.py
+python NF-UNSW-NB15/train.py
+```
 
 ## Testing
 
-Example:
+Use the dataset-specific README files for the recommended checkpoint path,
+`--train_frac`, and `--thr` values. Example:
 
-CUDA_VISIBLE_DEVICES=0 \
-python 2024-iomt-traffic-data/test.py \
---ckpt 2024-iomt-traffic-data/checkpoints/model.pth \
---data ./data/2024-iomt-traffic-data.pt \
---use_scaler \
---train_frac 0.01 \
---thr 0.56
-
-
-
-## Installation
-
-**Recommended environment:**
-
-```
-PyTorch Version: 2.4.0+cu121
-
-CUDA Version (Used by PyTorch): 12.1
-
-DGL Version: 2.4.0+cu121
+```bash
+python CIC_IOMT_2024/test.py \
+  --ckpt CIC_IOMT_2024/checkpoints/CIC-IOMT-2024.pth \
+  --data ./data/CIC-IOMT-2024.pt \
+  --use_scaler \
+  --train_frac 0.99 \
+  --thr 0.23
 ```
 
-
-
-## Parameters
-
-| Argument       | Description                         | Example                            |
-| -------------- | ----------------------------------- | ---------------------------------- |
-| `--ckpt`       | Path to pretrained model checkpoint | `checkpoints/model.pth`            |
-| `--data`       | Path to graph dataset file          | `./data/2024-iomt-traffic-data.pt` |
-| `--train_frac` | Tag data ratio                      | `0.01`                             |
-| `--thr`        | Threshold for anomaly detection     | `0.56`                             |
+Test scripts may generate local t-SNE visualization images. These are runtime
+outputs and are not committed.
